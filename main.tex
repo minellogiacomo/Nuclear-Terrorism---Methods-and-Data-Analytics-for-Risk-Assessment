@@ -1,0 +1,179 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\graphicspath{ {./figures/} }
+% babel english 
+\usepackage[english]{babel}
+
+%references done right
+\usepackage[
+backend=biber,
+sorting=none
+]{biblatex}
+\addbibresource{references/biblio.bib}
+\usepackage{csquotes}
+\usepackage[left=2cm, right=2cm, top=2cm]{geometry}
+
+% cross-referenced element become links 
+\usepackage[hidelinks]{hyperref}
+
+%This will set the options to configure the behaviour of the links within the document. 
+%Every parameter must be comma-separated and the syntax must be in the format parameter=value. 
+\hypersetup{
+    colorlinks=false,
+    %linkcolor=black,
+    %urlcolor=cyan,
+    %pdftitle={PDF title},
+    %pdfpagemode=FullScreen
+}
+\urlstyle{same}
+
+\title{Nuclear Terrorism - Methods and Data Analytics for Risk Assessment}
+\date{May 2020}
+
+\begin{document}
+%\begin{abstract}
+%\noindent  Abstract here
+%\end{abstract}
+%\section*{Model}
+%\begin{figure}[h!]
+%    \centering
+%    \includegraphics[width=\textwidth]{test.png}
+%    \caption{AgenaRisk Model}
+%    \label{fig:mesh1}
+%\end{figure}
+{\footnotesize
+\section{List of nodes with descriptions}
+\begin{itemize}
+    \item \textbf{State sponsor}: Nation with a history of sponsoring terrorist acts. Does not necessarily have to be the host nation of the terrorist group, if any. [\textit{boolean}]
+
+    \item \textbf{Number of actors}: Number of attackers involved. [\textit{labelled}] 
+
+    \item \textbf{Organization of actors}: Specifically refers to groups exhibiting certain structural characteristics (for instance, control by charismatic leaders, intentional focus on recruiting, etc.) guaranteeing (or not) the cohesiveness of the relationships among the actors. [\textit{labelled}]
+
+    \item \textbf{Influence of organization}:  Measure of importance/notability/power of the terrorists in an international context. [\textit{ranked}] 
+
+    \item \textbf{Political turmoil}: State of instability in the political sphere of the state. [\textit{boolean}]
+
+    \item \textbf{Blackmailing}: Whether blackmail is used against the government or defenders of nuclear sites. [\textit{boolean}]
+
+    \item \textbf{New nuclear weapon state}: Whether, in the near future (5-10 years), a state acquires nuclear weapons and/or the nuclear materials with the required resources to make nuclear weapons. [\textit{boolean}]
+
+    \item \textbf{Nuclear material availability}: Presence of nuclear material which is available for use. [\textit{boolean}]
+
+    \item \textbf{Type of weapon}: Type of nuclear weapon. [\textit{labelled}] 
+
+    \item \textbf{Acquisition}: Mode of acquisition of the nuclear weapon. [\textit{labelled}]
+
+    \item \textbf{Financial resources}: Financial resources available to the actors involved. [\textit{ranked}]
+
+    \item \textbf{Technical competence}: Degree of technical competence and availability of individuals with technical competencies. [\textit{ranked}]
+
+    \item \textbf{Usable weapon}: Presence of a weapon that the group has acquired and is capable of detonating. [\textit{boolean}]
+
+    \item \textbf{On-site security}: Presence of safeguards in place to protect the nuclear weapons. [\textit{boolean}]
+
+    \item \textbf{Surveillance}: Level of surveillance in place in order to avert the attack. [\textit{boolean}]
+
+    \item \textbf{Attack success}: Whether the attack is successful according to the desired outcome. [\textit{boolean}]
+
+    \item \textbf{Casualties}: Proportion of human injuries and deaths the attack will cause. [\textit{labelled}]
+    
+    \item \textbf{Population density}: Population density of the targeted area. [\textit{integer interval}] 
+
+    \item \textbf{Location}: Type of location (of different sizes) of the targeted area. [\textit{labelled}]
+    
+    \item \textbf{Target interest}: Degree to which the targeted area appeals to terrorists. [\textit{ranked}]
+
+    \item \textbf{Desired outcome}: Overall outcome the terrorist group wishes to generate as a result of the attack. [\textit{labelled}]  
+
+    \item \textbf{Psychological / instrumental / ideological motivations}: Clusters of motivations the actors may have for committing acts of terror. Psychological motivations are those stemming from personal, emotional or mental factors, be they rational or irrational (revenge against a state/group, atomic fetishism). Instrumental motivations include those that seek material gain in the aftermath of the attack (mass deaths, mass destruction/area denial, opportunity for innovation/escalation). Ideological motivations represent the will to impose the terrorist group’s ideology or worldview over a group of people, or the need to create the conditions to achieve the tenets of some ideology. [\textit{boolean}]
+\end{itemize}
+\section{Justification of design choices}
+We now discuss the thought process that went into giving some of our nodes and connections a certain structure as opposed to another. 
+
+\noindent  [organization of actors, number of actors, state sponsor] $\longrightarrow$ [influence of organization]
+
+\begin{itemize}
+    \item     The three nodes that converge into the \textit{influence of organization} node do a good job of capturing the overall power and capabilities the terrorist organization (or individual terrorist) has. The \textit{state sponsor}’s node probabilities consider the known state sponsors of terrorism, going by the US list, and others\cite{StateSponsorsTerrorism}\cite{StatesponsoredTerrorism2020}. For the number of actors, we used multiple sources to estimate the frequency of sizes\cite{PickYourPOICN}\cite{nesserResearchNoteSingle2012}. In assigning the \textit{influence of organization}’s node probabilities, we assumed \textit{organization of actors} to have the biggest impact on the influence of the terrorist group, with \textit{state sponsor} having the least. Note that a lone wolf is unlikely to have much of an impact, and the \textit{organization of actors}’ node is not information-adding in this particular case.  
+\end{itemize}
+
+\noindent   [influence of organization] $\longrightarrow$ [nuclear material availability, technical competence, financial resources] 
+
+\begin{itemize}
+    \item  The diverging nodes from \textit{influence of organization} demonstrate an intuitive causal link, seeing as the greater the influence, the greater the availability of resources in general. Due to lack of reputable sources, we decided to assume a T-normal distribution for \textit{technical} and \textit{financial resources}. This can create problems due to the diverging connection and the correlation of these nodes in real scenarios 
+\end{itemize}
+
+\noindent   [political turmoil, blackmail, new nuclear weapon state, influence of organization] $\longrightarrow$ [nuclear material availability] 
+
+\begin{itemize}
+    \item      Many factors combined can create an opportunity for terrorists to acquire nuclear products. We decided to model the relationship as an m-from-n expression, where 2 out of the 4 parent nodes instantiated as affirmative (and \textit{influence of organization} instantiated as “Large”) would practically guarantee a positive update of the beliefs regarding the availability of nuclear material. The \textit{political turmoil} node is a major factor\cite{NuclearThreatInitiative} as instability can pave the way for getting ahold of otherwise well-protected items. The probabilities are again expressed as a share of the nations with a political situation above or below a given threshold\cite{NuclearThreatInitiative}. \textit{Blackmailing} the state is also an effective means\cite{ellingsen2009nuclear}. We also considered the possibility of a \textit{new nuclear weapon state} in the near future, with the main purpose of responding to Scenario 3. The node’s probabilities are expressed in terms of the proportion of actual nuclear weapon states worldwide, plus the state that would eventually become one as well.   
+\end{itemize}
+
+\noindent  [nuclear material availability] $\longrightarrow$ [type of weapon] $\longrightarrow$ [type of acquisition] $\longleftarrow$ [on-site security]  
+\begin{itemize}
+    \item       We expect the belief on the \textit{type of weapon} for the attack to depend heavily on what kind of nuclear material is more probable to be available. The weapon types are based on those mentioned in the chapter\cite{bostromGlobalCatastrophicRisks2011}, which affirms that HEU gun-type weapons are the easiest to make, leading us to assign them the greatest share of their probability. Next, the \textit{acquisition} node, which assumes the possibility of no acquisition, depends on the \textit{on-site security}, particularly in case of theft. The probabilities were inferred from a dataset\cite{PickYourPOICN} on nuclear weapons but had to be scaled down to fit our labels, which are fewer than the dataset’s. By following qualitative descriptions, we also assumed the gun-type weapon to be more available for purchase compared to the others, for instance.  
+\end{itemize}
+
+\noindent   [technical competence, financial resources, acquisition] $\longrightarrow$ [usable weapon] 
+\begin{itemize}
+    \item   For the \textit{usable weapon} node, we considered the scenarios in which the terrorists not only acquire the weapon, but also manage to transport the weapon, are able to detonate it, and so forth. This node captures all those ideas which probably do not warrant their own nodes or may be difficult to model and are heavily correlated with \textit{technical competence} and \textit{financial resources}. In general, however, whether the weapon has been acquired is the most significant factor. The probabilities were assigned to show this, but again, due to lack of specific data, they are estimates representing the causal relationships among the states, not hard stats.  
+\end{itemize}
+
+\noindent   [usable weapon, surveillance, target interest, desired outcome] $\longrightarrow$ [attack success]
+\begin{itemize}
+    \item     Of the factors contributing to the success of an attack, \textit{usable weapon} has the greatest weight. However, even if \textit{usable weapon} were “No”, terrorists with the aim of spreading fear, for example, could still use the possession of the weapon as an intimidation tactic. Since we defined \textit{attack success} with respect to achieving some \textit{desired outcome}, there is a residual belief that the success is positive. \textit{Surveillance} also influences the success of an attack because a greater involvement of government forces leads to a higher chance of averting an attack. \textit{Target interest} essentially describes the appeal of the location to a terrorist, so a target with a low interest is unlikely to be attacked at all. The NPT of \textit{attack success} is large and difficult to quantify; as such, probability values were entered considering each mix of factors and each conditional probability, where \textit{usable weapon} and \textit{desired outcome} combined have the largest contribution. 
+\end{itemize}
+
+\noindent   [attack success] $\longrightarrow$ [casualties] 
+\begin{itemize}
+    \item     The number of \textit{casualties} of a successful attack directly depends on whether the attack has succeeded. The intervals (below or equal to and above 100 000 victims) were chosen to respond reliably to Scenario 1 and are based on data related to hypothetical nuclear attacks\cite{ListProjectedDeath2020}. While the number of casualties does depend on factors such as the quantity of nuclear material and explosion radius, we have chosen not to model them in order to make the information flow as linearly as possible, avoiding triangles in the connections.
+\end{itemize}
+
+\noindent   [motivation 1, motivation 2, …] $\longrightarrow$ [psychological motivations, instrumental motivations, ideological motivations] 
+\begin{itemize}
+    \item   This is an example of a synthetic idiom. The parents of the \textit{motivation} nodes were inspired by those laid out in the chapter\cite{bostromGlobalCatastrophicRisks2011}, and divorcing was used in order to reduce the effects of combinatorial explosion and correlation. In addition, we believe the relationships are best expressed as a noisy-OR, seeing as there are likely more factors that could contribute to each motivation cluster but may be difficult to quantify.  
+\end{itemize}
+
+\noindent   [psychological motivations, instrumental motivations, ideological motivations] $\longrightarrow$ [desired outcome] 
+\begin{itemize}
+    \item   We associated clusters of motivations with the outcome the terrorists seek to achieve. The probabilities of \textit{desired outcome} were assigned to reflect the motivations as logically as possible, so, for instance, \textit{ideological motivations} are more likely to influence objectives related to spreading religious dogmas or seizing power, whereas \textit{instrumental motivations} would probably require some major act of disruption. A combination of motivations leads to more spread-out probabilities.   
+\end{itemize}
+
+\noindent  [location, population density] $\longrightarrow$ [target interest]
+\begin{itemize}
+    \item      While the \textit{population density} of the targeted area alone is quite significant for an attack, certain \textit{locations} have more at stake (e.g. more likely to have property damage in a large urban area as opposed to an open area, given equal population densities), providing terrorists with more of an incentive to attack them, which highlights the main concept behind the \textit{target interest} node. The \textit{population density} intervals were given probabilities according to the average population densities of sovereign states, islands, etc. The \textit{location} node distinguishes large and small urban agglomerations, but also considers open spaces where people may gather.  
+\end{itemize} 
+
+\noindent In addition to the node-specific weaknesses mentioned above, we deem it necessary to address some of the more general issues that were encountered during the modelling process. 
+\begin{itemize}
+    \item     We had to make some trade-offs between model complexity and plausibility of probabilities due to insufficient or unreliable data. To avoid inserting arbitrary probabilities, we reduced the number of nodes or grouped several concepts into a single node. Nevertheless, some NPTs that could not be reasonably eliminated or simplified further (e.g. \textit{attack success}) had to be given probabilities based on our qualitative data, causal links and best intuition. 
+
+    \item     Given the rarity of nuclear terrorism, reliable data was difficult to find. This is the advantage of using a Bayesian network compared with traditional statistical tools. Indeed, we decided to represent the beliefs in the NPTs even renouncing precise historical data, given the very few successful past terrorist nuclear attacks. 
+
+    \item     Some nodes do not have a significant impact on the success of an attack when taken separately. This is the case of \textit{blackmailing} or \textit{new nuclear weapon state}, for instance. However, the same conditions, when combined, can provide a relevant impact in updating the belief about the success of an attack.  
+\end{itemize} 
+\section{Scenarios}
+\subsection{Scenario 1}
+Input nodes: \textit{political turmoil} [Yes], \textit{state sponsor} [Yes], \textit{number of actors} [Many], \textit{casualties} [$\geq100000$]. 
+
+\noindent This results in an increase of 0.00252 in the probability compared to when only \textit{casualties} is instantiated (from 0.24971 to 0.25223). In addition, when \textit{casualties} is not instantiated, the increase is 0.09244, up from 0.15979. 
+
+\subsection{Scenario 2}
+Input nodes: \textit{number of actors} [individual], \textit{technical competence} [High], \textit{financial resources} [Low], \textit{organization of actors} [Loose, unorganized], \textit{location} [Large urban agglomeration], \textit{psychological motivations} [True].
+
+\noindent In this scenario, the updated probability of \textit{attack success} is 0.15612. The likelihood of a number of \textit{casualties} below 100,000 is 0.77 and the main \textit{desired outcome} is “disruption” at 0.329238, followed by “other” at 0.29691. 
+
+\subsection{Scenario 3}
+Input nodes: \textit{new nuclear weapon state} [True].
+
+\noindent In this case, we observed the incremental probability in \textit{attack success} by triggering just this input node. The value in question changed from 0.15979 to 0.16002, a miniscule amount. According to Table 19.3 of the chapter\cite{bostromGlobalCatastrophicRisks2011}, the likelihood as of today that the attack succeeds is low, though in the future a greater number of states might come to possess nuclear weapons which terrorists could acquire. Overall, we believe the small increase is justified.
+
+\nocite{GTDGlobalTerrorism}
+\nocite{113205Rischio}
+\nocite{bastianelliGRUPPITERRORISTICIATTIVI}
+\nocite{CouncilCommonPosition}
+\nocite{OrganizzazioniTerroristicheSecondo2020}
+\nocite{ReducingGreatestRisks}
+\printbibliography[heading=bibintoc]}
+\end{document}
